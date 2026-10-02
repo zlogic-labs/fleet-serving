@@ -65,13 +65,16 @@ func (r *Reporter) Send(ctx context.Context, rep inventory.Report) error {
 		return errNoControlPlane
 	}
 	rep.Cluster.Name = r.Cluster
+	// Stamped by the sender rather than left to the receiver: the control plane
+	// can only compare a version it was handed against the one it knows.
+	rep.Contract = inventory.ContractVersion
 
 	body, err := json.Marshal(rep)
 	if err != nil {
 		return errs.Internal(err)
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPut,
-		r.URL+"/api/v1/inventory", bytes.NewReader(body))
+		r.URL+inventory.Path, bytes.NewReader(body))
 	if err != nil {
 		return errs.Internal(err)
 	}
