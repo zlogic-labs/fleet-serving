@@ -1,0 +1,25 @@
+# build output
+/bin/
+/dist/
+*.exe
+*.test
+*.out
+coverage.*
+
+# Local development state.
+/.dev/
+
+# editors
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# tool caches
+.zlogic/
+
+# go.work points at a sibling checkout of github.com/zlogic-labs/fleet for
+# local development and is machine-specific, so it is not committed. A fresh
+# clone builds against the pinned release of fleet/core instead.
+go.work
+go.work.sum
