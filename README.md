@@ -77,6 +77,27 @@ EOF
 The replacement belongs in `go.work` rather than `go.mod` because a `replace`
 in `go.mod` travels to every downstream consumer of this module.
 
+### Two independent version numbers
+
+- **The Go module version** (`fleet/core v0.2.0`) is bumped when `core` gains
+  symbols this module uses.
+- **The wire contract version** (`inventory.ContractVersion`, currently 1, and
+  the `/api/v1` path) is bumped only when the report format changes in a way
+  the rules in [the contract
+  document](https://github.com/zlogic-labs/fleet/blob/master/docs/inventory-contract.md)
+  forbid.
+
+Bumping one does not bump the other.
+
+### After bumping the pin
+
+A `go.work` with a local replace hides a pin that no longer exists. Build once
+with the workspace off, or the published module is the one nobody tested:
+
+```sh
+GOWORK=off go build ./... && GOWORK=off go test ./...
+```
+
 ## Tests
 
 `make check` covers the packages here. The end-to-end test — CRD applied,

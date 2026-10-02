@@ -3,7 +3,7 @@ module github.com/zlogic-labs/fleet-serving
 go 1.26.4
 
 require (
-	github.com/zlogic-labs/fleet/core v0.1.0
+	github.com/zlogic-labs/fleet/core v0.2.0
 	k8s.io/api v0.37.1
 	k8s.io/apimachinery v0.37.1
 	k8s.io/client-go v0.37.1

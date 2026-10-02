@@ -110,8 +110,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=
 github.com/x448/float16 v0.8.4/go.mod h1:14CWIYCyZA/cWjXOioeEpHeN/83MdbZDRQHoFcYsOfg=
-github.com/zlogic-labs/fleet/core v0.1.0 h1:GWQ1YsXlckvHLr3VfG4NnrPcU/XnRxzbEGEXlJPwc2Y=
-github.com/zlogic-labs/fleet/core v0.1.0/go.mod h1:qgMTYv1rx2F5ycR3x3MA1J8PbFsX8VSiqiylIuCSn/k=
+github.com/zlogic-labs/fleet/core v0.2.0 h1:6/ekoW8H9MDWLGAN082QmCK8d8eVToYdwcepn6qHdUY=
+github.com/zlogic-labs/fleet/core v0.2.0/go.mod h1:qgMTYv1rx2F5ycR3x3MA1J8PbFsX8VSiqiylIuCSn/k=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
 go.uber.org/goleak v1.3.0/go.mod h1:CoHD4mav9JJNrW/WLlf7HGZPjdw8EucARQHekz1X6bE=
 go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
