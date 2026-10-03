@@ -4,6 +4,8 @@ package controller
 import (
 	"context"
 	"fmt"
+	"net"
+	"strconv"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -85,17 +87,25 @@ func (r *FleetDeploymentReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 	st.ReadyReplicas, st.Replicas = ready, replicas
 	st.Format = string(model.Status.Format)
 
+	// The published address is the one the probe can actually reach, which is
+	// the Service's ClusterIP. Publishing the DNS name instead is how this went
+	// wrong: the probe dialed the ClusterIP, the engine answered, the endpoint
+	// was reported healthy, and then every request through it failed with EOF
+	// because the name does not resolve off the node. The gateway is not
+	// required to run inside the cluster (P7), so a name that only resolves
+	// from in here is not an address it can be given.
+	if svc, ok := r.service(ctx, dep.Namespace, res.Name); ok {
+		host := clusterHost(svc, res.Address)
+		if res.Port > 0 {
+			st.Address = net.JoinHostPort(host, strconv.Itoa(int(res.Port)))
+		} else {
+			st.Address = host
+		}
+	}
+
 	// Only ask a running engine what it is. A deployment that is still
 	// scheduling has nothing to report, and a failed probe leaves the version
 	// unset rather than carrying a guess into the console (P4).
-	//
-	// The Service ClusterIP is preferred over the DNS name for the probe, and
-	// the distinction is not cosmetic: cluster.local only resolves from
-	// inside the cluster, so an operator running on a workstation probes a
-	// name it cannot resolve and reports no version for a perfectly healthy
-	// engine. The IP works from both places. The DNS name still goes in the
-	// status, because it is the address that survives rescheduling and it is
-	// what the in-cluster gateway should use.
 	if phase == api.DeployAvailable && res.Address != "" {
 		target := r.probeTarget(ctx, &dep, &res)
 		if facts := r.probeEndpoint(ctx, &dep, target, profile); facts.Version != "" {

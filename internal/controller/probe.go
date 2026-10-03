@@ -80,15 +80,16 @@ func (r *FleetDeploymentReconciler) probeEndpoint(ctx context.Context, dep *api.
 // ClusterIP where there is one, because cluster.local only resolves from
 // inside the cluster. And the DNS name is the fallback for a Service that has
 // not been assigned an IP yet.
+//
+// This is the same address the status publishes, because a gateway that is
+// told one address and probed on another ends up reporting a healthy endpoint
+// it cannot route to.
 func (r *FleetDeploymentReconciler) probeTarget(ctx context.Context, dep *api.FleetDeployment, res *render.Result) string {
-	var svc corev1.Service
-	if err := r.Get(ctx, types.NamespacedName{Name: res.Name, Namespace: dep.Namespace}, &svc); err != nil {
-		return res.Address
+	svc, ok := r.service(ctx, dep.Namespace, res.Name)
+	if !ok {
+		return net.JoinHostPort(res.Address, strconv.Itoa(int(res.Port)))
 	}
-	host := svc.Spec.ClusterIP
-	if host == "" || host == corev1.ClusterIPNone {
-		host = res.Address
-	}
+	host := clusterHost(svc, res.Address)
 	for _, port := range svc.Spec.Ports {
 		if port.Port > 0 {
 			return net.JoinHostPort(host, strconv.Itoa(int(port.Port)))
@@ -98,6 +99,27 @@ func (r *FleetDeploymentReconciler) probeTarget(ctx context.Context, dep *api.Fl
 	// would turn "the Service exists but exposes nothing" into a timeout that
 	// reads like an unhealthy engine.
 	return ""
+}
+
+// service reads the Service the render produced, tolerating its absence.
+func (r *FleetDeploymentReconciler) service(ctx context.Context, namespace, name string) (*corev1.Service, bool) {
+	var svc corev1.Service
+	if err := r.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, &svc); err != nil {
+		return nil, false
+	}
+	return &svc, true
+}
+
+// clusterHost prefers the ClusterIP over the DNS name, and says why: the
+// gateway is not required to run inside the cluster (P7), so a name that only
+// resolves from in here is an address half of the deployments cannot use. A
+// headless Service has no IP at all, and there the name is all there is.
+func clusterHost(svc *corev1.Service, fallback string) string {
+	ip := svc.Spec.ClusterIP
+	if ip == "" || ip == corev1.ClusterIPNone {
+		return fallback
+	}
+	return ip
 }
 
 // adapter returns the one adapter there is.
