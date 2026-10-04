@@ -43,6 +43,7 @@ func run() error {
 		namespace   string
 		showVersion bool
 		reportTo    string
+		reportToken string
 		reportEvery time.Duration
 		clusterName string
 	)
@@ -54,6 +55,10 @@ func run() error {
 		"restrict reconciliation to one namespace; empty means all of them")
 	flag.StringVar(&reportTo, "report-to", "",
 		"control plane base URL to report cluster inventory to, e.g. http://127.0.0.1:8081; empty disables reporting")
+	// No envOr default on its own: an operator reading --help should see that
+	// the credential exists rather than having to know the variable name.
+	flag.StringVar(&reportToken, "report-token", os.Getenv("FLEET_REPORT_TOKEN"),
+		"bearer token for the control plane; required unless it is bound to loopback")
 	flag.DurationVar(&reportEvery, "report-every", 30*time.Second, "how often to report cluster inventory")
 	flag.StringVar(&clusterName, "cluster-name", "",
 		"name this operator reports its cluster under; defaults to the node name")
@@ -103,6 +108,7 @@ func run() error {
 			return fmt.Errorf("name this cluster: %w", err)
 		}
 		reporter := report.New(reportTo, name)
+		reporter.Token = reportToken
 		collector := &report.Collector{Reader: mgr.GetAPIReader(), Scheme: mgr.GetScheme(), Version: Version}
 		// Reporting is a manager Runnable rather than part of a reconcile:
 		// an inventory report is a periodic fact about the whole cluster, not

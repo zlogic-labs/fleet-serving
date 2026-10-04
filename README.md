@@ -50,14 +50,20 @@ kubectl apply -f config/samples/
 ```sh
 ./bin/fleet-operator \
   --namespace fleet \
-  --report-to http://127.0.0.1:8081 \
-  --report-every 30s \
-  --cluster-name k3s-dev
+   --report-to http://127.0.0.1:8081 \
+   --report-token "$FLEET_ADMIN_TOKEN" \
+   --report-every 30s \
+   --cluster-name k3s-dev
 ```
 
 `--report-to` and `--cluster-name` are optional: without them the controller
 still reconciles, it simply has nowhere to report. `--report-every` defaults to
 30 seconds.
+
+`--report-token` is only needed when the control plane is not bound to
+loopback. `fleet-apiserver` refuses to start on a wildcard bind without an
+admin token, and without a matching token here every inventory report is a 401
+— which the console shows as an empty cluster page rather than as an error.
 
 ## Developing against a local Fleet checkout
 
