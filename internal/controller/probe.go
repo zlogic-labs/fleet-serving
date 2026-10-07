@@ -128,6 +128,10 @@ func clusterHost(svc *corev1.Service, fallback string) string {
 // contract, so there is exactly one implementation of it and the engine family
 // is a Profile. Adding a second adapter to accommodate a second engine would
 // reintroduce the vendor coupling P1 exists to prevent.
-func (r *FleetDeploymentReconciler) adapter() engine.Adapter {
+//
+// It is the concrete type and not an interface because an interface with one
+// implementation is a promise nobody asked for; core dropped engine.Adapter
+// for that reason, and this is its only caller.
+func (r *FleetDeploymentReconciler) adapter() *openai.Adapter {
 	return openai.NewAdapter(openai.NewProbeClient(0, 0))
 }
